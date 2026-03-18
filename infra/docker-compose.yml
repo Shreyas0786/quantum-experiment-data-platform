@@ -1,0 +1,16 @@
+version: "3.9"
+
+services:
+  api:
+    build:
+      context: ..
+      dockerfile: infra/Dockerfile
+    ports:
+      - "8000:8000"
+    volumes:
+      - ../storage/experiments:/app/storage/experiments
+    env_file:
+      - ../.env
+    environment:
+      - ENVIRONMENT=development
+    restart: unless-stopped

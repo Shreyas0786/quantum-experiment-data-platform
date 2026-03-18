@@ -1,0 +1,10 @@
+fastapi>=0.135.1
+uvicorn
+numpy
+pandas
+sqlalchemy
+pytest
+python-multipart
+python-dotenv
+qiskit
+qiskit-aer
