@@ -5,21 +5,8 @@ A backend data platform that simulates the infrastructure used to store and anal
 ---
 
 ## Architecture
-```
-Qiskit Quantum Circuit Simulator
-            |
-            v
-Experiment JSON Files (storage/experiments/)
-            |
-            v
-FastAPI Data Ingestion API
-            |
-            v
-SQLite Metadata Database
-            |
-            v
-Statistical Analysis Pipeline (NumPy + Pandas)
-```
+
+![Quantum Experiment Data Platform Architecture](docs/architecture.svg)
 
 ---
 
