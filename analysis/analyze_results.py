@@ -3,6 +3,11 @@ import os
 import numpy as np
 import pandas as pd
 from pathlib import Path
+from datetime import datetime
+from reportlab.lib.pagesizes import letter
+from reportlab.lib import colors
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+from reportlab.lib.styles import getSampleStyleSheet
 
 EXPERIMENTS_DIR = Path("storage/experiments")
 
@@ -68,5 +73,78 @@ def analyze_experiments() -> dict:
 
     return stats
 
+def export_pdf_report(stats: dict, experiments: list):
+    filename = f"analysis_report_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}.pdf"
+    doc = SimpleDocTemplate(filename, pagesize=letter)
+    styles = getSampleStyleSheet()
+    elements = []
+
+    # Title
+    elements.append(Paragraph("Quantum Experiment Analysis Report", styles["Title"]))
+    elements.append(Spacer(1, 12))
+    elements.append(Paragraph(f"Generated: {datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')} UTC", styles["Normal"]))
+    elements.append(Spacer(1, 20))
+
+    # Summary statistics table
+    elements.append(Paragraph("Summary Statistics", styles["Heading2"]))
+    elements.append(Spacer(1, 10))
+
+    summary_data = [
+        ["Metric", "Value"],
+        ["Total Experiments", str(stats["total_experiments"])],
+        ["Mean Error Rate", str(stats["mean_error_rate"])],
+        ["Error Rate Variance", str(stats["variance_error_rate"])],
+        ["Min Error Rate", str(stats["min_error_rate"])],
+        ["Max Error Rate", str(stats["max_error_rate"])],
+        ["Mean Qubits", str(stats["mean_qubits"])],
+    ]
+
+    summary_table = Table(summary_data, colWidths=[300, 150])
+    summary_table.setStyle(TableStyle([
+        ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#2C3E50")),
+        ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
+        ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+        ("FONTSIZE", (0, 0), (-1, -1), 10),
+        ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.whitesmoke, colors.white]),
+        ("GRID", (0, 0), (-1, -1), 0.5, colors.grey),
+        ("PADDING", (0, 0), (-1, -1), 8),
+    ]))
+    elements.append(summary_table)
+    elements.append(Spacer(1, 20))
+
+    # Per experiment breakdown
+    elements.append(Paragraph("Per Experiment Breakdown", styles["Heading2"]))
+    elements.append(Spacer(1, 10))
+
+    exp_data = [["Experiment ID", "Qubits", "Shots", "Error Rate", "Unique States"]]
+    for e in experiments:
+        dist = analyze_measurement_distribution(e["measurement_results"])
+        exp_data.append([
+            e["experiment_id"][:8] + "...",
+            str(e["num_qubits"]),
+            str(e["shots"]),
+            str(e["error_rate"]),
+            str(dist["unique_states"])
+        ])
+
+    exp_table = Table(exp_data, colWidths=[180, 60, 60, 80, 80])
+    exp_table.setStyle(TableStyle([
+        ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#2C3E50")),
+        ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
+        ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+        ("FONTSIZE", (0, 0), (-1, -1), 9),
+        ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.whitesmoke, colors.white]),
+        ("GRID", (0, 0), (-1, -1), 0.5, colors.grey),
+        ("PADDING", (0, 0), (-1, -1), 6),
+    ]))
+    elements.append(exp_table)
+
+    doc.build(elements)
+    print(f"\nPDF report saved to: {filename}")
+    return filename
+
 if __name__ == "__main__":
-    analyze_experiments()
+    stats = analyze_experiments()
+    if stats:
+        experiments = load_experiments()
+        export_pdf_report(stats, experiments)
