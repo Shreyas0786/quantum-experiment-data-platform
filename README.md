@@ -10,6 +10,14 @@ A backend data platform that simulates the infrastructure used to store and anal
 
 ---
 
+## Publication
+
+This project is accompanied by a technical paper published on Zenodo:
+
+**[Designing a Research Data Pipeline for Quantum Computing Experiments](https://doi.org/10.5281/zenodo.19151044)**
+
+---
+
 ## Tech Stack
 
 - Python 3.11
